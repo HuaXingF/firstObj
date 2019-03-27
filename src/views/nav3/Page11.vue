@@ -11,15 +11,14 @@
       </el-form-item>
       <el-form-item label="生效树形">
         <el-select v-model="form.name" placeholder="请选择生效树形">
-          <el-option label="MESH树" value="MESH树"></el-option>
-          <el-option label="UMLS树" value="UMLS树"></el-option>
-         <!-- <el-option
+         <!-- <el-option label="MESH树" value="MESH树"></el-option>
+          <el-option label="UMLS树" value="UMLS树"></el-option>-->
+          <el-option
             v-for="item in options"
             :key="item.id"
             :label="item.itemName"
-            :value="item.id"
-          ></el-option>-->
-          <!-- <el-option label="其他树形结构" value="other"></el-option> -->
+            :value="item.name"
+          ></el-option>
         </el-select>
       </el-form-item>
 
@@ -59,8 +58,13 @@
         <el-button type="primary" v-on:click="addSubmit">保存设置</el-button>
       </el-form-item>
     </el-form>
+    <!--消息提示框-->
+   <!--<el-button :plain="true" @click="openVn">VNode</el-button>-->
   </el-col>
+
 </template>
+
+
 
 <script>
 export default {
@@ -75,7 +79,7 @@ export default {
         type: [],
         resource: "",
         desc: "",
-       
+
       },
        options:[],
       settings:[]
@@ -86,16 +90,33 @@ export default {
     // this.options =  this.queryTotal();
     // this.options.push();
     // this.options.pop();
+    this.init();
+    this.queryTotal()
   },
   methods: {
-   /* queryTotal() {
+
+    queryTotal() {
       //查询所以树形
-      this.$http.get("biaoyin/tbSysSettings/queryTotal.do").then(({ data }) => {
-        
+      this.$http.get("biaoyin/tbDictionary/selectAll.do").then(({ data }) => {
+
         this.options = data
 
+
       });
-    },*/
+    },
+   init(){
+     this.$http.get("biaoyin/tbSysSettings/queryTotal.do").then(({data}) => {
+       for (let i=0;i<data.length;i++) {
+         if (data[i].itemName == "生效树形") {
+           let treeName = data[i].itemValue;// 根据树形名称来取决于是什么树
+           this.form.name=treeName;
+         } else if (data[i].itemName == "标引次数"){
+           let num = data[i].itemValue;// 根据树形名称来取决于是什么树
+           this.form.num=num;
+         }
+       }
+     })
+   },
     onSubmit() {
       console.log("submit!");
     },
@@ -107,6 +128,13 @@ export default {
           console.log(this.settings);
           this.$http.post("biaoyin/tbSysSettings/updateById", this.settings).then(data => {
             console.log(data);
+            if(data){
+              this.$message({
+                message: "保存成功",
+                type: "success"});
+            }else{
+              this.$message.error("保存失败")
+            }
           });
         })
         .catch(() => {

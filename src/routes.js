@@ -127,7 +127,7 @@ let routes = [
             { path: '/page9', component: Page9, name: '住院信息标引' },
             { path: '/page14', component: Page14, name: '门诊信息标引' },
         ]
-    },
+    }/*,
     {
         path: '/',
         component: Home,
@@ -137,7 +137,7 @@ let routes = [
         children: [
             { path: '/page15', component: Page15, name: '标引审核' }
         ]
-    },
+    }*/,
     /*
     {
         path: '/',

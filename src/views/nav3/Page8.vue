@@ -56,21 +56,38 @@
 				<el-form-item label="关键字">
 					<el-input v-model="editForm.keyword" auto-complete="off"></el-input>
 				</el-form-item>
-				<el-form-item label="关联词">
+				<!--<el-form-item label="关联词">
 					<el-input v-model="editForm.meshword" auto-complete="off"></el-input>
-				</el-form-item>
-				<el-form-item label="标引时间">
-					<el-input v-model="editForm.markedtime" auto-complete="off"></el-input>
+				</el-form-item>-->
+                <el-form-item label="主题词">
+                    <el-input
+                            placeholder="输入关键字进行过滤"
+                            v-model="filterText">
+                    </el-input>
+                    <el-tree
+                            :data="data2"
+                            show-checkbox
+                            node-key="id"
+                            default-expand-all
+                            :expand-on-click-node="false"
+                            :default-checked-keys="checked_keys"
+                            :props="defaultProps"
+                            :filter-node-method="filterNode"
+                            ref="tree2">
+                    </el-tree>
+                </el-form-item>
+				<!--<el-form-item label="标引时间">
+					<el-input v-model="editForm.markedtime" :disabled="true" auto-complete="off"></el-input>
 				</el-form-item>
 				<el-form-item label="标引者">
-					<el-input v-model="editForm.markedby" auto-complete="off"></el-input>
+					<el-input v-model="editForm.markedby" :disabled="true" auto-complete="off"></el-input>
 				</el-form-item>
 				<el-form-item label="主题词代码">
 					<el-input v-model="editForm.meshcode" auto-complete="off"></el-input>
 				</el-form-item>
 				<el-form-item label="引用次数">
 					<el-input v-model="editForm.numbers" auto-complete="off"></el-input>
-				</el-form-item>
+				</el-form-item>-->
 			</el-form>
 			<div slot="footer" class="dialog-footer">
 				<el-button @click.native="editFormVisible = false">取消</el-button>
@@ -86,8 +103,12 @@
 				</el-form-item>
 				<el-form-item label="字典体系" prop="treename">
 					<el-select v-model="addForm.treename" placeholder="请选择字典体系" @change="addTree()">
-						<el-option label="MESH树" value="MESH树"></el-option>
-						<el-option label="UMLS树" value="UMLS树"></el-option>
+						<el-option
+								v-for="item in options"
+								:key="item.value"
+								:label="item.name"
+								:value="item.name">
+						</el-option>
 					</el-select>
 				</el-form-item>
 				<el-form-item label="主题词">
@@ -99,8 +120,7 @@
 							:data="data2"
 							show-checkbox
 							node-key="id"
-							:default-expanded-keys="[2, 3]"
-							:default-checked-keys="[5]"
+                            default-expand-all
 							:props="defaultProps"
 							:filter-node-method="filterNode"
 							ref="tree2">
@@ -132,6 +152,7 @@
 			return {
 				filterText: '',
 				data2: [ ],
+                checked_keys:[],
 				defaultProps: {
 					children: 'children',
 					label: 'label'
@@ -142,8 +163,6 @@
 				tableData: [],
 
 				options: [],
-
-
 				users: [],
 				total: 0,
 				page: 1,
@@ -203,48 +222,31 @@
 					this.getByName(this.page);
 				}
 			},
-
-			//删除
-			/*handleDel: function (index, row) {
-				this.$confirm('确认删除该记录吗?', '提示', {
-					type: 'warning'
-				}).then(() => {
-					this.listLoading = true;
-					//NProgress.start();
-					let para = { id: row.id };
-					removeUser(para).then((res) => {
-						this.listLoading = false;
-						//NProgress.done();
-						this.$message({
-							message: '删除成功',
-							type: 'success'
-						});
-						this.getUsers();
-					});
-				}).catch(() => {
-
-				});
-			},*/
 			//显示编辑界面弹窗
 			handleEdit: function (index, row) {
 				//alert(index+"----"+row);
 				this.editFormVisible = true;
 				this.editForm = Object.assign({}, row);
-			},
+                this.addForm.treename = row.treename;
+                this.addTree();
+                this.checked_keys = [row.meshwordid]; // 给选中的树赋值
+            },
 			//显示新增界面弹窗
 			handleAdd: function () {
 				this.addFormVisible = true;
-				this.addForm = {
-					treename : 'MESH树'
-					/*name: '',
-					sex: -1,
-					age: 0,
-					birth: '',
-					addr: ''*/
-				};
-				this.addTree();
+				this.selectTree();// 查询所有树形结构
+				this.addTree();//选择树
 			},
-			//添加树
+			// 查询所有树形结构
+			selectTree() {
+				this.$http.get("biaoyin/tbDictionary/selectAll.do").then(({data})=>{
+					this.options = data;
+					/*this.addForm = {
+						treename : data[0].name // 默认为第一颗树
+					};*/
+				})
+			},
+			//选择树
 			addTree(){
 				let treeName = this.addForm.treename;
 				this.$http.get("biaoyin/tbTree/selectAll.do?treeName=" + treeName)
@@ -260,7 +262,25 @@
 					this.listLoading = true;
 					this.$http.get("biaoyin/tbLable/delTbLableById.do?id="+id).then(({data}) => {
 						this.listLoading = false;
-						this.init();
+						let keyword=this.filters.name;
+						if (keyword == null || keyword == "") {
+							this.init();
+						}else {
+							this.getByName();
+						}
+						if (data) {
+							this.$message({
+								showClose: true,
+								message: "删除成功",
+								type:'success'
+							})
+						}else {
+							this.$message({
+								showClose: true,
+								message: "删除失败",
+								type:'error'
+							})
+						}
 					});
 				});
 	        },
@@ -268,60 +288,143 @@
 			editSubmit: function () {
 				this.$refs.editForm.validate((valid) => {
 					if (valid) {
-						this.$confirm('确认提交吗？', '提示', {}).then(() => {
-							this.editLoading = true;
-							//NProgress.start();
-							let para = Object.assign({}, this.editForm);
-							para.markedtime = (!para.markedtime || para.markedtime == '') ? '' : util.formatDate.format(new Date(para.markedtime), 'yyyy-MM-dd');
-							this.$http.post("biaoyin/tbLable/updateTbLable.do",para).then(({ data }) =>{
-								this.editLoading = false;
-								this.$refs['editForm'].resetFields();
-								this.editFormVisible = false;
-								this.init();
-							});
-							/*editUser(para).then((res) => {
-								alert("111");
-								this.editLoading = false;
-								//NProgress.done();
-								this.$message({
-									message: '提交成功',
-									type: 'success'
-								});
-								this.$refs['editForm'].resetFields();
-								this.editFormVisible = false;
-								//this.getUsers();
-								this.init();
-							});*/
-						});
+                        let ridsb = this.$refs.tree2.getCheckedNodes(true,false);// 获取选中项的对象
+                        let name = "";
+                        let name_id = null;
+                        ridsb.forEach(ids =>{// 遍历集合
+                            //alert(ids.id+"---"+ids.label);// 获取id与文本
+                            name +=','+ids.label;// 拼接name
+                            name_id = ids.id;// 关键字id
+                        });
+                        name = name.substr(1);// 删除字符串前面的','
+                        if(this.panduan(name)){// 判断是否填写主题词，且主题词只能选择一个
+                        	if(this.panduan_gjz(this.editForm.keyword)){// 判断是否填写关键字
+                        	  this.$confirm('确认提交吗？', '提示', {}).then(() => {
+                                this.editLoading = true;
+                                let codeStartIndex = name.indexOf("(");
+                                let code = "";
+                                if (codeStartIndex != -1) { // 判断选中了几个主题词
+                                    let codeEndIndex = name.indexOf(")");
+                                    code = name.substring(codeStartIndex + 1, codeEndIndex);// 主题词编码
+                                    name = name.substring(0, codeStartIndex); // 主题词名称
+                                }
+                                let para = Object.assign({}, this.editForm);
+                                para.meshwordid = name_id;
+                                para.meshword = name;
+                                para.meshcode = code;
+                                console.log(para);
+
+								  this.$http.post("biaoyin/tbLable/updateTbLable.do", para).then(({data}) => {
+									  this.editLoading = false;
+									  this.$refs['editForm'].resetFields();
+									  this.editFormVisible = false;
+									  this.init();
+									  if (data) {
+										  this.$message({
+											  showClose: true,
+											  message: "编辑成功",
+											  type: 'success'
+										  })
+									  } else {
+										  this.$message({
+											  showClose: true,
+											  message: "编辑失败",
+											  type: 'error'
+										  })
+									  }
+								  });
+							  });
+							}
+                        }
 					}
 				});
+			},
+            // 判断选中了几个主题词与是否选择主题词
+            panduan:function(name){
+			    let panduan =  true;
+                if(name == ""){
+                    this.$message({
+                        message: '请选择一个主题词',
+                        type: 'warning'
+                    });
+                    panduan = false;
+                }else if (name.indexOf(',')>-1) { // 判断是否选中多个关键词，如果选中多个则不让提交
+                    //alert("主题词只能选择一个");
+                    this.$message({
+                        message: '主题词只能选择一个',
+                        type: 'warning'
+                    });
+                    panduan = false;
+                }
+                return panduan;
+            },
+			// 判断是否填写关键字
+			panduan_gjz:function(name){
+				let panduan =  true;
+			  if(name == null || name == ""){//判断添加关键字是否为空
+					this.$message({
+						message: '请选择关键字',
+						type: 'warning'
+					});
+					panduan =  false;
+			  }
+			  return panduan;
 			},
 			//新增
 			addSubmit: function () {
 				this.$refs.addForm.validate((valid) => {
 					if (valid) {
-						this.$confirm('确认提交吗？', '提示', {}).then(() => {
-							this.addLoading = true;
-							//NProgress.start();
-							let para = Object.assign({}, this.addForm);
-							this.$http.post("biaoyin/tbLable/insertTbLable.do",para).then(({ data }) =>{
-								this.addLoading = false;
-								this.$refs['addForm'].resetFields();
-								this.editFormVisible = false;
-								this.init();
-							});
-							/*addUser(para).then((res) => {
-								this.addLoading = false;
-								//NProgress.done();
-								this.$message({
-									message: '提交成功',
-									type: 'success'
-								});
-								this.$refs['addForm'].resetFields();
-								this.addFormVisible = false;
-								this.getUsers();
-							});*/
-						});
+						let ridsb = this.$refs.tree2.getCheckedNodes(true,false);// 获取选中项的对象
+                        let name = "";
+                        let name_id = null;
+                        ridsb.forEach(ids =>{// 遍历集合
+                            //alert(ids.id+"---"+ids.label);// 获取id与文本
+                            name +=','+ids.label;// 拼接name
+                            name_id = ids.id;// 关键字id
+                        });
+						name = name.substr(1);// 删除字符串前面的','
+                        if(this.panduan(name)){ // 判断选中了几个主题词
+                          if(this.panduan_gjz(this.addForm.keyword)) {
+							  this.$confirm('确认提交吗？', '提示', {}).then(() => {
+								  this.addLoading = true;
+								  //NProgress.start();
+								  let codeStartIndex = name.indexOf("(");
+								  let code = "";
+								  if (codeStartIndex != -1) {
+									  let codeEndIndex = name.indexOf(")");
+									  code = name.substring(codeStartIndex + 1, codeEndIndex);// 主题词编码
+									  name = name.substring(0, codeStartIndex); // 主题词
+								  }
+								  let para = {
+									  keyword: this.addForm.keyword, //关键字
+									  meshword: name,//主题词
+									  treename: this.addForm.treename,//主题词来自于哪个树形结构
+									  meshwordid: name_id,//主题词Id
+									  meshcode: code   //主题词编码
+								  };
+								  this.$http.post("biaoyin/tbLable/insertTbLable.do", para).then(({data}) => {
+									  if (data) {
+										  this.$message({
+											  showClose: true,
+											  message: "添加成功",
+											  type: 'success'
+										  })
+									  } else {
+										  this.$message({
+											  showClose: true,
+											  message: "添加失败",
+											  type: 'error'
+										  })
+									  }
+									  this.addLoading = false;
+									  this.$refs['addForm'].resetFields();
+									  this.addFormVisible = false;
+									  this.init();
+								  });
+
+							  });
+						  }
+						}
 					}
 				});
 			},

@@ -1,4 +1,3 @@
-<!--进来了-->
 <template>
 	<section>
 		<!--工具条-->
@@ -6,58 +5,60 @@
 			<el-form :inline="true" :model="filters">
 				<el-form-item>
 					<el-select v-model="filters.value" placeholder="请选择数据类别">
-					<el-option
-							v-for="item in options"
-							:key="item.value"
-							:label="item.label"
-							:value="item.value">
-					</el-option>
-				</el-select>
+						<el-option
+								v-for="item in options"
+								:key="item.value"
+								:label="item.label"
+								:value="item.value">
+						</el-option>
+					</el-select>
 				</el-form-item>
 				<el-form-item>
 					<el-input v-model="filters.name" placeholder="请输入患者名称"></el-input>
 				</el-form-item>
 				<el-form-item>
-				<el-button type="info" @click="dialogTableVisible = true" round>通过MESH库树选择</el-button>
+					<el-button type="info" @click="dialogTableVisible = true" round>通过树形选择</el-button>
 				</el-form-item>
 				<el-form-item>
-					<el-button type="primary" v-on:click="getUsers">查询</el-button>
+					<el-button type="primary" @click="queryOptions()">查询</el-button>
 				</el-form-item>
 			</el-form>
 		</el-col>
 
 		<!--列表-->
+
 		<el-table :data="tableData" highlight-current-row  style="width: 100%;" v-bind:title="fullContext">
 			<el-table-column type="index" width="60">
 			</el-table-column>
-			<el-table-column prop="name" label="患者姓名" width="120" sortable>
+			<el-table-column prop="xm" label="患者姓名" width="120" sortable>
 			</el-table-column>
-			<el-table-column prop="sex" label="性别" width="100" :formatter="formatSex" sortable>
+			<el-table-column prop="xb" label="性别" width="120" sortable>
 			</el-table-column>
-			<el-table-column prop="age" label="年龄" width="100" sortable>
+			<el-table-column prop="nl" label="年龄" width="120" sortable>
 			</el-table-column>
-			<el-table-column prop="birth" label="出生年月" width="120" sortable>
+			<!-- <el-table-column prop="birth" label="出生年月" width="120" sortable>
+            </el-table-column> -->
+			<!-- <el-table-column prop="addr" label="家庭地址" min-width="180" sortable>
+            </el-table-column> -->
+			<el-table-column prop="blms" label="病历描述"  min-width="140" sortable>
 			</el-table-column>
-			<el-table-column prop="addr" label="家庭地址" min-width="180" sortable>
+			<el-table-column prop="byzt" label="标引状态" min-width="120" sortable>
 			</el-table-column>
-			<el-table-column prop="bingli" label="病历描述"  min-width="180" sortable>
-			</el-table-column>
-			<el-table-column prop="byzt" label="标引状态" min-width="180" sortable>
-			</el-table-column>
-			<el-table-column label="操作" width="150">
+			<el-table-column label="操作" width="130">
 				<template scope="scope">
 					<el-button type="danger" size="small" @click="showDetail(scope.$index, scope.row)">查看详情</el-button>
 				</template>
 			</el-table-column>
 		</el-table>
 
+
 		<!--工具条-->
 		<el-col :span="24" class="toolbar">
-			<el-pagination layout="prev, pager, next" @current-change="handleCurrentChange" :page-size="20" :total="total" style="float:right;">
+			<el-pagination layout="prev, pager, next" @current-change="handleCurrentChange" :page-size="5" :total="total" style="float:right;">
 			</el-pagination>
 		</el-col>
 
-		<!--编辑界面-->
+		<!--编辑界面
 		<el-dialog title="编辑" v-model="editFormVisible" :close-on-click-modal="false">
 			<el-form :model="editForm" label-width="80px" :rules="editFormRules" ref="editForm">
 				<el-form-item label="姓名" prop="name">
@@ -83,28 +84,49 @@
 				<el-button @click.native="editFormVisible = false">取消</el-button>
 				<el-button type="primary" @click.native="editSubmit" :loading="editLoading">提交</el-button>
 			</div>
-		</el-dialog>
+		</el-dialog>-->
 
 		<!--新增界面-->
 		<el-dialog title="查看详情" v-model="addFormVisible" :close-on-click-modal="false">
-			<el-form :model="addForm" label-width="80px" :rules="addFormRules" ref="addForm">
+			<el-form :model="addForm" label-width="100px" :rules="addFormRules" ref="addForm">
 				<el-form-item label="姓名" prop="name">
-					<el-input v-model="addForm.name" auto-complete="off" disabled="disabled"></el-input>
+					<el-input v-model="addForm.xm" auto-complete="off" disabled="disabled"></el-input>
 				</el-form-item>
 				<el-form-item label="性别">
-						<el-input v-model="addForm.sex" auto-complete="off" disabled="disabled"></el-input>
+					<el-input v-model="addForm.xb" auto-complete="off" disabled="disabled"></el-input>
 				</el-form-item>
 				<el-form-item label="年龄">
-					<el-input v-model="addForm.age" auto-complete="off" disabled="disabled"></el-input>
+					<el-input v-model="addForm.nl" auto-complete="off" disabled="disabled"></el-input>
 				</el-form-item>
-				<el-form-item label="生日">
-					<el-input v-model="addForm.birth" auto-complete="off" disabled="disabled"></el-input>
+				<el-form-item label="病区名称">
+				    <el-input v-model="addForm.bqmc" auto-complete="off" disabled="disabled"></el-input>
+			    </el-form-item>
+				<el-form-item label="病区号">
+					<el-input v-model="addForm.bfh" auto-complete="off" disabled="disabled"></el-input>
 				</el-form-item>
-				<el-form-item label="地址">
+				<el-form-item label="床号">
+					<el-input v-model="addForm.ch" auto-complete="off" disabled="disabled"></el-input>
+				</el-form-item>
+				<el-form-item label="入院时间">
+					<el-input v-model="addForm.rysj" auto-complete="off" disabled="disabled"></el-input>
+				</el-form-item>
+				<el-form-item label="出院时间">
+					<el-input v-model="addForm.cysj" auto-complete="off" disabled="disabled"></el-input>
+				</el-form-item>
+				<el-form-item label="住院天数">
+					<el-input v-model="addForm.zyts" auto-complete="off" disabled="disabled"></el-input>
+				</el-form-item>
+				<el-form-item label="入院诊断">
+					<el-input type="textarea" v-model="addForm.ryzd" auto-complete="off" disabled="disabled"></el-input>
+				</el-form-item>
+				<el-form-item label="入院症状特征">
+					<el-input v-model="addForm.ryzztz" auto-complete="off" disabled="disabled"></el-input>
+				</el-form-item>
+				<!--<el-form-item label="地址">
 					<el-input type="textarea" v-model="addForm.addr"></el-input>
-				</el-form-item>
+				</el-form-item> -->
 				<el-form-item label="病历描述">
-					<el-input type="textarea" v-model="addForm.des" rows="5"></el-input>
+					<el-input type="textarea" v-model="addForm.blms" disabled="disabled"></el-input>
 				</el-form-item>
 			</el-form>
 			<div slot="footer" class="dialog-footer">
@@ -112,7 +134,7 @@
 			</div>
 		</el-dialog>
 
-		<el-dialog title="MESH库树形" :visible.sync="dialogTableVisible">
+		<el-dialog title="请选择查询的主题词" :visible.sync="dialogTableVisible">
 			<el-input
 					placeholder="输入关键字进行过滤"
 					v-model="filterText">
@@ -123,13 +145,13 @@
 					node-key="id"
 					default-expand-all
 					:expand-on-click-node="false"
-					:render-content="renderContent"
 					:filter-node-method="filterNode"
+					@check-change="setIds"
 					ref="tree2">
 			</el-tree>
 			<div slot="footer" class="dialog-footer">
 				<el-button @click.native="dialogTableVisible = false">取消</el-button>
-				<el-button type="primary" @click.native="dialogTableVisible = false">确定</el-button>
+				<el-button type="primary"  @click.native="queryOptions()">确定</el-button>
 			</div>
 		</el-dialog>
 
@@ -148,103 +170,28 @@
 			}
 		},
 		data() {
-			const data = [{
-				id: 1,
-				label: '消化系统(A1)',
-				children: [{
-					id: 4,
-					label: '胃类疾病(A1.456)',
-					children: [{
-						id: 9,
-						label: '胃肿瘤(A1.456.313)'
-					}, {
-						id: 10,
-						label: '胃溃疡(A1.456.314)'
-					}]
-				}]
-			}, {
-				id: 2,
-				label: '呼吸系统(A2)',
-				children: [{
-					id: 5,
-					label: '肺结核(A2.457)'
-				}, {
-					id: 6,
-					label: '肺肿瘤(A2.458)'
-				}]
-			}, {
-				id: 3,
-				label: '循环系统(A3)',
-				children: [{
-					id: 7,
-					label: '白血病(A3.334)'
-				}, {
-					id: 8,
-					label: '血吸虫(A3.335)'
-				}]
-			}];
+			//const data = []
 			return {
+				show:"",
 				filterText: '',
-				data4: JSON.parse(JSON.stringify(data)),
-				data5: JSON.parse(JSON.stringify(data)),
+				treeName:[],
+				idList:[],
+				obj:{},
+				data4:[],
+				data5:[],
 				filters: {
-					name: ''
+					name: "",
+					value:"",
 				},
-				tableData: [{
-					name:'刘桂香',
-					sex:'女',
-					age:'47',
-					birth:'1973-03-13',
-					addr:'湖北省武汉市洪山区关山街道',
-					bingli:'头疼已经3个月,偶尔伴有呕吐..',
-					byzt:'未标引',
-				}, {
-					name:'王声海',
-					sex:'男',
-					age:'47',
-					birth:'1973-03-13',
-					addr:'湖北省武汉市洪山区关山街道',
-					bingli:'头疼已经3个月,偶尔伴有呕吐..',
-					byzt:'已标引',
-				}, {
-					name:'王声海',
-					sex:'男',
-					age:'47',
-					birth:'1973-03-13',
-					addr:'湖北省武汉市洪山区关山街道',
-					bingli:'头疼已经3个月,偶尔伴有呕吐..',
-					byzt:'已标引',
-				},{
-					name:'王声海',
-					sex:'男',
-					age:'47',
-					birth:'1973-03-13',
-					addr:'湖北省武汉市洪山区关山街道',
-					bingli:'头疼已经3个月,偶尔伴有呕吐..',
-					byzt:'已标引',
-				},{
-					name:'王声海',
-					sex:'男',
-					age:'47',
-					birth:'1973-03-13',
-					addr:'湖北省武汉市洪山区关山街道',
-					bingli:'头疼已经3个月,偶尔伴有呕吐..',
-					byzt:'已标引',
-				},{
-					name:'王声海',
-					sex:'男',
-					age:'47',
-					birth:'1973-03-13',
-					addr:'湖北省武汉市洪山区关山街道',
-					bingli:'头疼已经3个月,偶尔伴有呕吐..',
-					byzt:'标引中',
-				}],
+				tableData: [],
+				//标引状态信息转换
+				//lable:["已标引","标引中","未标引"],
 				options: [ {
 					value: 'tb_yl_mz_medical_record',
-					label: '门诊数据'
+					label: '就诊数据'
 				}, {
-					value: '选项3',
-					label: '医疗数据'
+					value: 'tb_cls_lh_summary',
+					label: '住院数据'
 				}],
 				dialogTableVisible: false,
 				value: '',
@@ -253,7 +200,8 @@
 				page: 1,
 				listLoading: false,
 				sels: [],//列表选中列
-				fullContext:'头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤',
+				fullContext:'',
+				startus:["已标引","标引中","未标引"],
 
 				editFormVisible: false,//编辑界面是否显示
 				editLoading: false,
@@ -271,7 +219,6 @@
 					birth: '',
 					addr: ''
 				},
-
 				addFormVisible: false,//新增界面是否显示
 				addLoading: false,
 				addFormRules: {
@@ -280,15 +227,7 @@
 					]
 				},
 				//新增界面数据
-				addForm: {
-					name: '刘桂香',
-					sex: 'nan',
-					age: 28,
-					birth: '1974-10-23',
-					addr: '湖北省武汉市洪山区关山街道',
-					des:'头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤,头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤'
-				}
-
+				addForm: []
 			}
 		},
 		methods: {
@@ -298,142 +237,120 @@
 				return data.label.indexOf(value) !== -1;
 			},
 			//性别显示转换
-			formatSex: function (row, column) {
-				return row.sex == 1 ? '男' : row.sex == 0 ? '女' : '未知';
-			},
+			// formatSex: function (row, column) {
+			// 	return row.sex == 1 ? '男' : row.sex == 0 ? '女' : '未知';
+			// },
 			handleCurrentChange(val) {
 				this.page = val;
-				this.getUsers();
+				if(this.filters.value=="" || this.filters.value==null){
+					this.findByPage();
+				}else{
+					this.queryOptions()
+				}
+
 			},
 			//获取用户列表
-			getUsers() {
-				let para = {
-					page: this.page,
-					name: this.filters.name
-				};
+			findByPage() {
 				this.listLoading = true;
-				//NProgress.start();
-				getUserListPage(para).then((res) => {
-					this.total = res.data.total;
-					this.users = res.data.users;
+				this.$http.get("biaoyin/tbClsLhSummary/findPage.do?pageNum="+this.page+"&&pageSize=5").then(({data}) => {
+					this.total = data.total;
+					//this.users = data.users;
 					this.listLoading = false;
-					//NProgress.done();
+					this.tableData = data.rows;
+					this.changestarus();
+					console.log(this.tableData)
 				});
-			},
-			//删除
-			handleDel: function (index, row) {
-				this.$confirm('确认删除该记录吗?', '提示', {
-					type: 'warning'
-				}).then(() => {
-					this.listLoading = true;
-					//NProgress.start();
-					let para = { id: row.id };
-					removeUser(para).then((res) => {
-						this.listLoading = false;
-						//NProgress.done();
-						this.$message({
-							message: '删除成功',
-							type: 'success'
-						});
-						this.getUsers();
-					});
-				}).catch(() => {
+				this.initTree();
 
-				});
 			},
-			//显示编辑界面
+			changestarus(){
+				for(let i=0;i<this.tableData.length;i++){
+					//alert(parseInt(this.tableData[i].byzt)-1+"===============")
+					this.tableData[i].byzt=this.startus[parseInt(this.tableData[i].byzt)-1];
+				}
+			}
+			,
+			setIds(){
+
+				// if(checked){
+				let list = this.$refs.tree2.getCheckedNodes(true,false);
+				this.idList=[];
+				for(let i=0;i<list.length;i++){
+					this.idList.push(list[i].id)
+				}
+				//alert(this.idList)
+				console.log(this.idList)
+				//this.$refs.treeForm.setCheckedNodes([data]);
+				//交叉点击节点
+				/*  }else{
+                    this.$refs.treeForm.setCheckedNodes([]);
+                    //点击已经选中的节点，置空
+                  }*/
+			},
+			//初始化树形
+			initTree(){
+				let treeName ;
+				this.$http.get("biaoyin/tbSysSettings/queryById.do?id=2").then(({data}) => {
+					treeName=data.itemValue;
+					this.treeName=treeName;
+					//alert(this.treeName)
+					this.init2()
+				})
+
+			},
+			init2(){
+				// 通过树形选
+				this.$http.get("biaoyin/tbTree/selectAll.do?treeName="+this.treeName).then(({data})=>{
+					//alert(this.treeName)
+					this.data4 = data;
+					//console.log(data)
+				})
+			},
+			queryOptions(){
+				//filters
+				this.obj={};
+				this.dialogTableVisible = false;
+				if(this.filters.value!="" &&this.filters.value!=null){
+					this.obj.tableName=this.filters.value;
+					if(this.filters.name!=null && this.filters.name!=""){
+						let maps={
+							xm:this.filters.name
+						}
+						this.obj.map=maps;
+					}
+					console.log(this.obj)
+					if(this.idList.length>0) {
+						this.obj.idList = this.idList;
+					}
+					let url="biaoyin/findPage/"+ this.obj.tableName+"/findPageByInfo.do?pageNum="+this.page+"&&pageSize=5";
+					this.$http.post(url,this.obj).then(({data}) =>{
+						this.total = data.total;
+						this.users = data.users;
+						this.listLoading = false;
+						this.tableData =data.rows
+						this.changestarus();
+					})
+				}else{
+					this.$message({
+						message:'请选择数据类别',
+						type:'warning'
+					})
+				}
+			},
+			/*//显示编辑界面
 			handleEdit: function (index, row) {
 				this.editFormVisible = true;
 				this.editForm = Object.assign({}, row);
-			},
-			//显示新增界面
-			showDetail: function () {
+			},*/
+			//显示详情界面
+			showDetail: function (index, row) {
 				this.addFormVisible = true;
-				this.addForm = {
-					name: '刘桂香',
-					sex: '男',
-					age: 28,
-					birth: '1974-10-23',
-					addr: '湖北省武汉市洪山区关山街道',
-					des:'头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤,头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤'
-				};
+				this.addForm = row
 			},
-			//编辑
-			editSubmit: function () {
-				this.$refs.editForm.validate((valid) => {
-					if (valid) {
-						this.$confirm('确认提交吗？', '提示', {}).then(() => {
-							this.editLoading = true;
-							//NProgress.start();
-							let para = Object.assign({}, this.editForm);
-							para.birth = (!para.birth || para.birth == '') ? '' : util.formatDate.format(new Date(para.birth), 'yyyy-MM-dd');
-							editUser(para).then((res) => {
-								this.editLoading = false;
-								//NProgress.done();
-								this.$message({
-									message: '提交成功',
-									type: 'success'
-								});
-								this.$refs['editForm'].resetFields();
-								this.editFormVisible = false;
-								this.getUsers();
-							});
-						});
-					}
-				});
-			},
-			//新增
-			addSubmit: function () {
-				this.$refs.addForm.validate((valid) => {
-					if (valid) {
-						this.$confirm('确认提交吗？', '提示', {}).then(() => {
-							this.addLoading = true;
-							//NProgress.start();
-							let para = Object.assign({}, this.addForm);
-							para.birth = (!para.birth || para.birth == '') ? '' : util.formatDate.format(new Date(para.birth), 'yyyy-MM-dd');
-							addUser(para).then((res) => {
-								this.addLoading = false;
-								//NProgress.done();
-								this.$message({
-									message: '提交成功',
-									type: 'success'
-								});
-								this.$refs['addForm'].resetFields();
-								this.addFormVisible = false;
-								this.getUsers();
-							});
-						});
-					}
-				});
-			},
-			selsChange: function (sels) {
-				this.sels = sels;
-			},
-			//批量删除
-			batchRemove: function () {
-				var ids = this.sels.map(item => item.id).toString();
-				this.$confirm('确认删除选中记录吗？', '提示', {
-					type: 'warning'
-				}).then(() => {
-					this.listLoading = true;
-					//NProgress.start();
-					let para = { ids: ids };
-					batchRemoveUser(para).then((res) => {
-						this.listLoading = false;
-						//NProgress.done();
-						this.$message({
-							message: '删除成功',
-							type: 'success'
-						});
-						this.getUsers();
-					});
-				}).catch(() => {
-
-				});
-			}
 		},
-		mounted() {
-			this.getUsers();
+		created() {
+			this.findByPage();
+
 		}
 	}
 

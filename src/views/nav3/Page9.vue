@@ -13,24 +13,25 @@
         node-key="id"
         default-expand-all
         :expand-on-click-node="false"
-        :render-content="renderContent"
+        :props="defaultProps"
         :filter-node-method="filterNode"
+        @check-change="setIds"
         ref="tree2"
       ></el-tree>
       <div slot="footer" class="dialog-footer">
         <el-button @click.native="dialogTableVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="dialogTableVisible = false">确定</el-button>
+        <el-button type="primary" v-on:click="queryOptions()">确定</el-button>
       </div>
     </el-dialog>
 
     <!--住院小结标引tab页-->
-    <el-tab-pane label="出院小结表(133)" name="first">
+    <el-tab-pane label="出院小结表(133)" name="0">
       <section>
         <!--工具条-->
         <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
           <el-form :inline="true" :model="filters">
             <el-form-item>
-              <el-input placeholder="请输入关键字查询"></el-input>
+              <el-input placeholder="请输入查询姓名" v-model="name"></el-input>
             </el-form-item>
             <el-form-item>
               <span class="demonstration">请选择标引状态</span>
@@ -63,7 +64,7 @@
             </el-form-item>
 
             <el-form-item>
-              <el-button type="primary" v-on:click="getUsers">查询</el-button>
+              <el-button type="primary" v-on:click="queryOptions">查询</el-button>
             </el-form-item>
           </el-form>
         </el-col>
@@ -85,15 +86,17 @@
           <el-table-column prop="cysj" label="出院时间" min-width="170" sortable></el-table-column>
           <el-table-column prop="zzysxm" label="主治医师" min-width="170" sortable></el-table-column>
           <el-table-column prop="byzt" label="标引状态" min-width="180" sortable></el-table-column>
-          <el-table-column prop="czz" label="操作者" min-width="170" sortable></el-table-column>
+          <!--<el-table-column prop="czz" label="操作者" min-width="170" sortable></el-table-column>-->
           <el-table-column label="操作" width="200" fixed="right">
             <template scope="scope">
-              <el-button type="danger" size="small" @click="markText(scope.$index, scope.row)">开始标引</el-button>
+              <el-button v-if="scope.row.byzt!='已标引'" type="danger" size="small" @click="markText(scope.$index, scope.row)">开始标引</el-button>
+              <el-button v-if="scope.row.byzt=='已标引'" type="danger" size="small" @click="markText(scope.$index, scope.row)">编辑标引</el-button>
+              <el-button v-if="scope.row.byzt=='已标引'" type="danger" size="small" @click="viewText(scope.$index, scope.row)">查看</el-button>
             </template>
           </el-table-column>
         </el-table>
 
-        <!--翻页工具条-->
+       <!-- &lt;!&ndash;翻页工具条&ndash;&gt;
         <el-col :span="24" class="toolbar">
           <el-pagination
             layout="prev, pager, next"
@@ -102,7 +105,7 @@
             :total="total"
             style="float:right;"
           ></el-pagination>
-        </el-col>
+        </el-col>-->
 
         <!--已标引的关键字列表-->
         <el-dialog title="已关联列表" v-model="markedFormVisible" :close-on-click-modal="false">
@@ -175,7 +178,7 @@
     </el-tab-pane>
 
     <!--手术明细tab页-->
-    <el-tab-pane label="手术明细表(0)" name="second">
+    <el-tab-pane label="手术明细表(0)" name="1">
       <section>
         <!--工具条-->
         <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
@@ -243,7 +246,7 @@
           </el-table-column>
         </el-table>
 
-        <!--翻页工具条-->
+      <!--  &lt;!&ndash;翻页工具条&ndash;&gt;
         <el-col :span="24" class="toolbar">
           <el-pagination
             layout="prev, pager, next"
@@ -252,7 +255,7 @@
             :total="total"
             style="float:right;"
           ></el-pagination>
-        </el-col>
+        </el-col>-->
 
         <!--标引界面-->
         <el-dialog title="数据标引" v-model="addFormVisible" :close-on-click-modal="false">
@@ -294,7 +297,7 @@
     </el-tab-pane>
 
     <!--诊断明细表tab-->
-    <el-tab-pane label="诊断明细表(0)" name="third">
+    <el-tab-pane label="诊断明细表(0)" name="2">
       <section>
         <!--工具条-->
         <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
@@ -361,18 +364,15 @@
           </el-table-column>
         </el-table>
 
-        <!--翻页工具条-->
-        <el-col :span="24" class="toolbar">
-          <el-pagination
-            layout="prev, pager, next"
-            @current-change="handleCurrentChange"
-            :page-size="3"
-            :total="total"
-            style="float:right;"
-          ></el-pagination>
-        </el-col>
+
       </section>
     </el-tab-pane>
+      <!--翻页工具条-->
+      <!--工具条-->
+      <el-col :span="24" class="toolbar">
+          <el-pagination layout="prev, pager, next" @current-change="handleCurrentChange" :page-size="5" :total="total" style="text-align:right;">
+          </el-pagination>
+      </el-col>
   </el-tabs>
 </template>
 
@@ -396,102 +396,51 @@ export default {
     filterText(val) {
       this.$refs.tree2.filter(val);
     }
+
   },
   data() {
-    const data = [
-      /*{
-        id: 1,
-        label: "消化系统(A1)",
-        children: [
-          {
-            id: 4,
-            label: "胃类疾病(A1.456)",
-            children: [
-              {
-                id: 9,
-                label: "胃肿瘤(A1.456.313)"
-              },
-              {
-                id: 10,
-                label: "胃溃疡(A1.456.314)"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        id: 2,
-        label: "呼吸系统(A2)",
-        children: [
-          {
-            id: 5,
-            label: "肺结核(A2.457)"
-          },
-          {
-            id: 6,
-            label: "肺肿瘤(A2.458)"
-          }
-        ]
-      },
-      {
-        id: 3,
-        label: "循环系统(A3)",
-        children: [
-          {
-            id: 7,
-            label: "白血病(A3.334)"
-          },
-          {
-            id: 8,
-            label: "血吸虫(A3.335)"
-          }
-        ]
-      }*/
-    ];
     return {
-      activeName: "first",
+      activeName: "0",
       filterText: "",
-      data4: JSON.parse(JSON.stringify(data)),
+      defaultProps: {
+        children: 'children',
+        label: 'label'
+      },
+      index:0,
+      keyWordTable:["tb_cls_lh_summary","tb_cls_lh_summary"],
+      idList:[],
+      data4: [],
       dialogTableVisible: false,
       filters: {
         name: ""
       },
       markContent: null,
-        /*'&nbsp;&nbsp;&nbsp;1111头疼已经3个月，偶尔伴有<span style="color: red;text-decoration:underline">呕吐现象</span>(已关联主题词：<span style="color: green;text-decoration:underline ">胃炎</span>)，之前检查显示胃上有肿瘤头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤头疼已经3个月，偶尔伴有呕吐现象，' +
-        '非溃疡性消化不良是一种功能性胃病，也有少部分属于<span style="color: red;text-decoration:underline">轻度器质性病变</span>(已关联主题词：<span style="color: green;text-decoration:underline ">胃溃疡</span>)，过去很多医生将该病诊断为慢性胃炎、胃神经功能症、胃肠道植物神经功能紊乱、胃功能性消化不良、胃痉挛等。据最新流行病学权威调查，' +
-        '这种病在人群中的发病率高达10%，也是胃的常见和多发病。患者会有间歇性或<span style="color: red;text-decoration:underline">持续性上腹隐痛</span>(已关联主题词：<span style="color: green;text-decoration:underline ">胃炎</span>)或偶有剧痛及不适、恶心、呕吐、反酸、烧心等上消化道症状，但临床检查如胃镜、上消化道钡剂造影和肝胆胰B超等，并不能发现胃和其他脏器有引起这些症状的器质性病变或轻微病变。也就是说胃的主观症状较多，但客观检查阳性发现少或者无。其病因应与胃运动功能障碍、胃十二指肠轻度炎症、精神因素有关。',*/
-      tableData: [
-        /*{
-          JZLSH: "jz001",
-          YLJGDM: "WH123",
-          XM: "刘桂花",
-          KSMC: "呼吸科",
-          RYSJ: "2018-10-23",
-          CYSJ: "2018-11-10",
-          ZZYSXM: "张德华教授",
-          byzt: "未标引",
-          czz: "刘东升"
-        }*/
-      ],
+      tableData: [],
       tableData2: [],
       tableData3: [],
+      name:null,
+        obj:{},
       options: [
         {
-          value: "未标引",
+          value: "",
+          label: "全部"
+        },
+        {
+          value: "3",
           label: "未标引"
         },
         {
-          value: "已标引",
-          label: "已标引"
+          value: "2",
+          label: "标引中"
         },
         {
-          value: "标引中",
-          label: "标引中"
-        }
+          value: "1",
+          label: "已标引"
+        },
       ],
 
       markData: [
-        {
+        /*{
           keyword: "呕吐",
           meshword: "胃炎",
           marktime: "2018-02-22",
@@ -520,7 +469,7 @@ export default {
           meshword: "胃炎",
           marktime: "2018-02-22",
           marker: "张国华"
-        }
+        }*/
       ],
       pickerOptions2: {
         shortcuts: [
@@ -555,7 +504,7 @@ export default {
       },
       value4: [new Date(2000, 10, 10, 10, 10), new Date(2000, 10, 11, 10, 10)],
       value5: "",
-
+      strus:["已标引","标引中","未标引"],
       value: "",
       users: [],
       total: 0,
@@ -571,31 +520,89 @@ export default {
         name: [{ required: true, message: "请输入姓名", trigger: "blur" }]
       },
       //新增界面数据
-      addForm: {
-        name: "张三",
-        sex: "男",
-        age: 34,
-        birth: "",
-        addr: "湖北省武汉市洪山区关山街道",
-        des:
-          "头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤",
-        kw: "胃上异物",
-        tw: "胃溃疡"
-      }
+      addForm: {}
     };
   },
   methods: {
-    // tableData3(){
+       handleCurrentChange(val) {
+          this.page = val;
+          if(this.obj==null || this.obj=={}){
+              this.queryOptions()
+          }else{
+              this.init(this.page);
+          }
 
-    // },
-    // tableData2(){
+      },
+    setIds(){
 
-    // },
+       // if(checked){
+         let list = this.$refs.tree2.getCheckedNodes(true,false);
+          console.log(list)
+         this.idList=[];
+         for(let i=0;i<list.length;i++){
+           this.idList.push(list[i].id)
+         }
+         //alert(this.idList)
+         //console.log(this.idList)
+          //this.$refs.treeForm.setCheckedNodes([data]);
+          //交叉点击节点
+      /*  }else{
+          this.$refs.treeForm.setCheckedNodes([]);
+          //点击已经选中的节点，置空
+        }*/
+    },
+    //按条件查询数据
+    //查询传参实例:{"tableName":"tb_brands","idList":[1,2,3],"map":{"name":"dfg";"list":[{"","",""}]}}}
+    queryOptions(){
+      this.dialogTableVisible = false;
+      this.obj={};
+      let maps={};
+      if(this.name!=null && this.name!=""){
+       maps.xm=this.name;
+       //this.obj.map=maps;
+      }
+      if(this.value=="1" || this.value=="2"|| this.value=="3"){
+        maps.byzt=this.value;
+      }
+
+      if(this.idList.length>0){
+        this.obj.idList=this.idList;
+      }
+      //console.log(this.value5)
+      if(this.value5.length>=1){
+       // alert("1")
+        //let value1=.format("yyyy-MM-dd");
+        let d = new Date(this.value5[0])//.format("yyyy-MM-dd")
+        let  time1=d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
+        let b = new Date(this.value5[1])//.format("yyyy-MM-dd")
+        let time2=b.getFullYear() + '-' + (b.getMonth() + 1) + '-' + b.getDate() + ' ' + b.getHours() + ':' + b.getMinutes() + ':' + b.getSeconds();
+
+          //alert(time1)
+        let list=[{"ziDuan":"cysj","value1":time1,"value2":time2}];
+        maps.list=list;
+
+      }
+      if(maps!=null && maps!={}){
+        this.obj.map=maps;
+      }
+      this.obj.tableName=this.keyWordTable[this.index]
+        let url="biaoyin/findPage/"+ this.obj.tableName+"/findPageByInfo.do?pageNum="+this.page+"&&pageSize=5";
+        this.$http.post(url,this.obj).then(({data}) =>{
+            let list = data.rows;
+            this.total = data.total;
+            this.tableData = list;
+           this.xiugai();
+        })
+      console.log(this.obj)
+    },
     editLoading() {},
-    handleClick() {},
+    handleClick(e) {
+      this.index=e.name
+      this.activeName=e.name;
+    },
     renderContent() {},
 
-    init(pageNum = 1, pageSize = 10) {
+    init(pageNum = 1, pageSize =5) {
       //请求出院小结数据数据列表
       this.$http
         .get(
@@ -608,7 +615,26 @@ export default {
           let list = data.rows;
           this.total = data.total;
           this.tableData = list;
+          this.xiugai();
         });
+      // 通过树形选择
+      this.$http.get("biaoyin/tbSysSettings/queryTotal.do").then(({data})=>{
+        for (let i=0;i<data.length;i++) {
+           if (data[i].itemName == "生效树形") {
+             let treeName = data[i].itemValue;// 根据树形名称来取决于是什么树
+             this.$http.get("biaoyin/tbTree/selectAll.do?treeName=" + treeName).then(({data})=>{
+                this.data4 = data;
+             })
+           }
+        }
+      })
+    },
+    // 改变状态码
+    xiugai(){
+      for (let i=0; i<this.tableData.length; i++) {
+        this.tableData[i].byzt=this.strus[parseInt(this.tableData[i].byzt)-1]
+        //alert(this.tableData[i].byzt);
+      }
     },
     //过滤树上的节点
     filterNode(value, data) {
@@ -617,11 +643,27 @@ export default {
     },
     //显示编辑界面
     markText: function(i, { jzlsh, yljgdm }) {
+      let list = JSON.stringify(this.tableData);
       this.$router.push({//跳转到编辑页的时候把参数传过去
         path: "/page10",
         query: {
+          i,
           jzlsh,
-          yljgdm
+          yljgdm,
+          list
+        }
+      });
+    },
+    // 查看已标引
+    viewText: function(i, { jzlsh, yljgdm }) {
+      let list = JSON.stringify(this.tableData);
+      this.$router.push({//跳转到查看页的时候把参数传过去
+        path: "/page12",
+        query: {
+          i,
+          jzlsh,
+          yljgdm,
+          list
         }
       });
     },
@@ -638,23 +680,8 @@ export default {
     },
     //获取用户列表
     getUsers() {
-      //   let para = {
-      //     page: this.page,
-      //     name: this.filters.name
-      //   };
-      //   this.listLoading = true;
-      //   //NProgress.start();
-      //   getUserListPage(para).then(res => {
-      //     this.total = res.data.total;
-      //     this.users = res.data.users;
-      //     this.listLoading = false;
-      //     //NProgress.done();
-      //   });
     },
-    handleCurrentChange(val) {
-      this.page = val;
-      this.init(this.page);
-    },
+
     showMarkedList() {
       this.markedFormVisible = true;
     }
@@ -662,6 +689,7 @@ export default {
   mounted() {
     // this.getUsers();
     this.init();
+    //this.initTree();
   }
 };
 </script>
