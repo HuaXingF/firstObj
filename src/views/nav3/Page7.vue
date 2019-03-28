@@ -32,7 +32,7 @@
 
 			<el-table-column type="index" width="60">
 			</el-table-column>
-			<el-table-column v-for="item in list1" v-bind:prop="item.shuXin" v-bind:label="item.ziDuan" width="120" sortable>
+			<el-table-column v-for="item in list1" v-bind:prop="item.shuXing" v-bind:label="item.ziDuan" width="120" sortable>
 			</el-table-column>
 			<!--<el-table-column prop="xb" label="性别" width="120" sortable>
 			</el-table-column>
@@ -64,7 +64,7 @@
 		<el-dialog title="查看详情" v-model="addFormVisible" :close-on-click-modal="false">
 			<el-form  label-width="100px" :rules="addFormRules" ref="addForm">
 				<el-form-item v-for="item in list1" v-bind:label="item.ziDuan"   prop="name">
-					<el-input v-model="addForm[item.shuXin]"  auto-complete="off" disabled="disabled" ></el-input>
+					<el-input v-model="addForm[item.shuXing]"  auto-complete="off" disabled="disabled" ></el-input>
 				</el-form-item>
 				<!--<el-form-item label="性别">
 					<el-input v-model="addForm.xb" auto-complete="off" disabled="disabled"></el-input>
@@ -222,7 +222,7 @@
 			//获取用户列表
 			findByPage() {
 				this.listLoading = true;
-				this.$http.get("biaoyin/tbClsLhSummary/findPage.do?pageNum="+this.page+"&&pageSize=5").then(({data}) => {
+				this.$http.get("biaoyin/tbYlMzMedicalRecord/findPage.do?pageNum="+this.page+"&&pageSize=5").then(({data}) => {
 					this.total = data.total;
 					//this.users = data.users;
 					this.listLoading = false;
@@ -323,7 +323,8 @@
 				}
 				this.$http.get("/biaoyin/findPage/queryColums.do?tableName="+tableName).then(({data}) => {
 					this.list1=data;
-					console.log(data)
+					//console.log(data)
+
 				})
 			},
 			//监听类别选择

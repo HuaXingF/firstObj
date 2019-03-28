@@ -17,7 +17,7 @@ import routes from './routes'
 import 'font-awesome/css/font-awesome.min.css'
 
 Vue.prototype.$http=axios;
-Vue.prototype.$http.defaults.baseURL = 'http://192.168.10.36:8080/';
+Vue.prototype.$http.defaults.baseURL = 'http://192.168.10.37:8080/';
 
 
 Vue.use(ElementUI)

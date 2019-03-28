@@ -75,7 +75,9 @@ export default {
               sessionStorage.setItem('user', JSON.stringify(user));
                this.$router.push({ path: '/page6' });
             }*/
-             if(data) {
+             console.log(data);
+             if(data != null) {
+               sessionStorage.setItem('user', JSON.stringify(data));
                this.$router.push({path: '/page6'});
              }else{
                //this.$router.push({path: '/login'});
