@@ -18,6 +18,7 @@ import Page12 from "./views/nav3/Page12.vue";
 import Page13 from "./views/nav3/Page13.vue";
 import Page14 from "./views/nav3/Page14.vue";
 import Page15 from "./views/nav3/Page15.vue";
+import Page16 from "./views/nav3/Page16.vue";
 
 let routes = [
     {
@@ -127,6 +128,16 @@ let routes = [
             { path: '/page9', component: Page9, name: '住院信息标引' },
             { path: '/page14', component: Page14, name: '门诊信息标引' },
         ]
+    },
+    {
+        path: '/',
+        component: Home,
+        name: '',
+        iconCls: 'fa fa-address-card',
+        leaf: true,//只有一个节点
+        children: [
+            { path: '/page16', component: Page16, name: '用户管理' }
+        ]
     }/*,
     {
         path: '/',
@@ -148,11 +159,11 @@ let routes = [
             { path: '/echarts', component: echarts, name: 'echarts' }
         ]
     },*/
-    {
+    /*{
         path: '*',
         hidden: true,
         redirect: { path: '/404' }
-    }
+    }*/
 ];
 
 export default routes;

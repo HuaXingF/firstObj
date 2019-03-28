@@ -14,7 +14,7 @@
     <el-form-item prop="checkPass">
       <el-input type="password" v-model="ruleForm2.checkPass" auto-complete="off" placeholder="密码"></el-input>
     </el-form-item>
-    <el-checkbox v-model="checked" checked class="remember">记住密码</el-checkbox>
+    <el-checkbox v-model="checked"  class="remember">记住密码</el-checkbox>
     <el-form-item style="width:100%;">
       <el-button
         type="primary"
@@ -35,8 +35,8 @@ export default {
     return {
       logining: false,
       ruleForm2: {
-        account: "admin",
-        checkPass: "123456"
+        /*account: "admin",
+        checkPass: "123456"*/
       },
       rules2: {
         account: [
@@ -48,43 +48,56 @@ export default {
           //{ validator: validaePass2 }
         ]
       },
-      checked: true
+      checked: false
     };
   },
   methods: {
     handleReset2() {
       this.$refs.ruleForm2.resetFields();
     },
-    handleSubmit2(ev) {
-      console.log(666);
-      this.$router.push({ path: "/page6" });
-
-      // var _this = this;
-      // this.$refs.ruleForm2.validate((valid) => {
-      //   if (valid) {
-      //     //_this.$router.replace('/table');
-      //     this.logining = true;
-      //     //NProgress.start();
-      //     var loginParams = { username: this.ruleForm2.account, password: this.ruleForm2.checkPass };
-      //     requestLogin(loginParams).then(data => {
-      //       this.logining = false;
-      //       //NProgress.done();
-      //       let { msg, code, user } = data;
-      //       if (code !== 200) {
-      //         this.$message({
-      //           message: msg,
-      //           type: 'error'
-      //         });
-      //       } else {
-      //         sessionStorage.setItem('user', JSON.stringify(user));
-      //         this.$router.push({ path: '/page6' });
-      //       }
-      //     });
-      //   } else {
-      //     console.log('error submit!!');
-      //     return false;
-      //   }
-      // });
+    handleSubmit2() {
+      var _this = this;
+     this.$refs.ruleForm2.validate((valid) => {
+       if (valid) {
+          //_this.$router.replace('/table');
+           this.logining = true;
+           //NProgress.start();
+          // var loginParams = { username: this.ruleForm2.account, password: this.ruleForm2.checkPass };
+           this.$http.get("biaoyin/tbSysUser/login.do?loginName="+this.ruleForm2.account+"&password="+this.ruleForm2.checkPass+"&checked="+this.checked).then(({data}) => {
+             this.logining = false;
+             /*let { msg, code, user } = data;
+            if (code !== 200) {
+               this.$message({
+               message: msg,
+                type: 'error'
+               });
+             } else {
+              sessionStorage.setItem('user', JSON.stringify(user));
+               this.$router.push({ path: '/page6' });
+            }*/
+             if(data) {
+               this.$router.push({path: '/page6'});
+             }else{
+               //this.$router.push({path: '/login'});
+               //this.ruleForm2.checkPass = "";
+               this.$message.error("账号或密码错误");
+             }
+           });
+       } /*else {
+            console.log('error submit!!');
+            return false;
+       }*/
+     });
+    }
+  },
+  created:function() {
+    //登录添加键盘事件,注意,不能直接在焦点事件上添加回车
+    let that = this;
+    document.onkeydown = function () {
+      let key = window.event.keyCode;
+      if (key === 13) {
+        that.handleSubmit2();//方法
+      }
     }
   }
 };

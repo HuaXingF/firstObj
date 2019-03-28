@@ -1,5 +1,6 @@
 import babelpolyfill from 'babel-polyfill'
 import axios from "axios";
+axios.defaults.withCredentials=true;// 前后端分离所必须的
 import Vue from 'vue'
 import App from './App'
 import ElementUI from 'element-ui'
@@ -16,7 +17,7 @@ import routes from './routes'
 import 'font-awesome/css/font-awesome.min.css'
 
 Vue.prototype.$http=axios;
-Vue.prototype.$http.defaults.baseURL = 'http://192.168.10.37:8080/';
+Vue.prototype.$http.defaults.baseURL = 'http://192.168.10.36:8080/';
 
 
 Vue.use(ElementUI)

@@ -4,7 +4,7 @@
 		<el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
 			<el-form :inline="true" :model="filters">
 				<el-form-item>
-					<el-select v-model="filters.value" placeholder="请选择数据类别">
+					<el-select v-model="filters.value" placeholder="请选择数据类别" @change="runFlash()">
 						<el-option
 								v-for="item in options"
 								:key="item.value"
@@ -27,26 +27,28 @@
 
 		<!--列表-->
 
-		<el-table :data="tableData" highlight-current-row  style="width: 100%;" v-bind:title="fullContext">
+		<el-table :data="tableData"  highlight-current-row  style="width: 100%;" v-bind:title="fullContext">
+
+
 			<el-table-column type="index" width="60">
 			</el-table-column>
-			<el-table-column prop="xm" label="患者姓名" width="120" sortable>
+			<el-table-column v-for="item in list1" v-bind:prop="item.shuXin" v-bind:label="item.ziDuan" width="120" sortable>
 			</el-table-column>
-			<el-table-column prop="xb" label="性别" width="120" sortable>
+			<!--<el-table-column prop="xb" label="性别" width="120" sortable>
 			</el-table-column>
 			<el-table-column prop="nl" label="年龄" width="120" sortable>
 			</el-table-column>
-			<!-- <el-table-column prop="birth" label="出生年月" width="120" sortable>
-            </el-table-column> -->
-			<!-- <el-table-column prop="addr" label="家庭地址" min-width="180" sortable>
-            </el-table-column> -->
+			&lt;!&ndash; <el-table-column prop="birth" label="出生年月" width="120" sortable>
+            </el-table-column> &ndash;&gt;
+			&lt;!&ndash; <el-table-column prop="addr" label="家庭地址" min-width="180" sortable>
+            </el-table-column> &ndash;&gt;
 			<el-table-column prop="blms" label="病历描述"  min-width="140" sortable>
 			</el-table-column>
 			<el-table-column prop="byzt" label="标引状态" min-width="120" sortable>
-			</el-table-column>
+			</el-table-column>-->
 			<el-table-column label="操作" width="130">
 				<template scope="scope">
-					<el-button type="danger" size="small" @click="showDetail(scope.$index, scope.row)">查看详情</el-button>
+					<el-button type="danger" size="small" @click="showDetail(scope.$index,scope.row)">查看详情</el-button>
 				</template>
 			</el-table-column>
 		</el-table>
@@ -58,41 +60,13 @@
 			</el-pagination>
 		</el-col>
 
-		<!--编辑界面
-		<el-dialog title="编辑" v-model="editFormVisible" :close-on-click-modal="false">
-			<el-form :model="editForm" label-width="80px" :rules="editFormRules" ref="editForm">
-				<el-form-item label="姓名" prop="name">
-					<el-input v-model="editForm.name" auto-complete="off"></el-input>
-				</el-form-item>
-				<el-form-item label="性别">
-					<el-radio-group v-model="editForm.sex">
-						<el-radio class="radio" :label="1">男</el-radio>
-						<el-radio class="radio" :label="0">女</el-radio>
-					</el-radio-group>
-				</el-form-item>
-				<el-form-item label="年龄">
-					<el-input-number v-model="editForm.age" :min="0" :max="200"></el-input-number>
-				</el-form-item>
-				<el-form-item label="生日">
-					<el-date-picker type="date" placeholder="选择日期" v-model="editForm.birth"></el-date-picker>
-				</el-form-item>
-				<el-form-item label="地址">
-					<el-input type="textarea" v-model="editForm.addr"></el-input>
-				</el-form-item>
-			</el-form>
-			<div slot="footer" class="dialog-footer">
-				<el-button @click.native="editFormVisible = false">取消</el-button>
-				<el-button type="primary" @click.native="editSubmit" :loading="editLoading">提交</el-button>
-			</div>
-		</el-dialog>-->
-
-		<!--新增界面-->
+		<!--详情界面-->
 		<el-dialog title="查看详情" v-model="addFormVisible" :close-on-click-modal="false">
-			<el-form :model="addForm" label-width="100px" :rules="addFormRules" ref="addForm">
-				<el-form-item label="姓名" prop="name">
-					<el-input v-model="addForm.xm" auto-complete="off" disabled="disabled"></el-input>
+			<el-form  label-width="100px" :rules="addFormRules" ref="addForm">
+				<el-form-item v-for="item in list1" v-bind:label="item.ziDuan"   prop="name">
+					<el-input v-model="addForm[item.shuXin]"  auto-complete="off" disabled="disabled" ></el-input>
 				</el-form-item>
-				<el-form-item label="性别">
+				<!--<el-form-item label="性别">
 					<el-input v-model="addForm.xb" auto-complete="off" disabled="disabled"></el-input>
 				</el-form-item>
 				<el-form-item label="年龄">
@@ -122,12 +96,9 @@
 				<el-form-item label="入院症状特征">
 					<el-input v-model="addForm.ryzztz" auto-complete="off" disabled="disabled"></el-input>
 				</el-form-item>
-				<!--<el-form-item label="地址">
-					<el-input type="textarea" v-model="addForm.addr"></el-input>
-				</el-form-item> -->
 				<el-form-item label="病历描述">
 					<el-input type="textarea" v-model="addForm.blms" disabled="disabled"></el-input>
-				</el-form-item>
+				</el-form-item>-->
 			</el-form>
 			<div slot="footer" class="dialog-footer">
 				<el-button @click.native="addFormVisible = false">关闭</el-button>
@@ -170,8 +141,14 @@
 			}
 		},
 		data() {
+
 			//const data = []
 			return {
+				//用于渲染页面字段
+				shuxingString: '',
+				list1:[],
+				//list2:[],
+
 				show:"",
 				filterText: '',
 				treeName:[],
@@ -211,14 +188,7 @@
 					]
 				},
 				//编辑界面数据
-				editForm: {
-					id: 0,
-					name: '',
-					sex: -1,
-					age: 0,
-					birth: '',
-					addr: ''
-				},
+				editForm: {},
 				addFormVisible: false,//新增界面是否显示
 				addLoading: false,
 				addFormRules: {
@@ -337,20 +307,45 @@
 					})
 				}
 			},
-			/*//显示编辑界面
-			handleEdit: function (index, row) {
-				this.editFormVisible = true;
-				this.editForm = Object.assign({}, row);
-			},*/
 			//显示详情界面
 			showDetail: function (index, row) {
-				this.addFormVisible = true;
-				this.addForm = row
+				    this.addFormVisible = true;
+				    this.addForm = row;
+				/*for (let prop in this.addForm) {
+					console.log("obj." + prop + " = " + this.addForm[prop]);
+				}*/
 			},
+			//初始化显示表单字段信息
+			showColums(){
+				let tableName="tb_yl_mz_medical_record"
+				if(this.filters.value!="" &&this.filters.value!=null){
+					tableName=this.filters.value;
+				}
+				this.$http.get("/biaoyin/findPage/queryColums.do?tableName="+tableName).then(({data}) => {
+					this.list1=data;
+					console.log(data)
+				})
+			},
+			//监听类别选择
+			runFlash(){
+				let obj={};
+				obj.tableName=this.filters.value;
+				this.showColums();
+				let url="biaoyin/findPage/"+obj.tableName+"/findPageByInfo.do?pageNum="+this.page+"&&pageSize=5"
+				//alert(obj.tableName)
+				this.$http.post(url,obj).then(({data}) =>{
+					this.total = data.total;
+					this.users = data.users;
+					this.listLoading = false;
+					this.tableData =data.rows
+					this.changestarus();
+				})
+			},
+
 		},
 		created() {
 			this.findByPage();
-
+			this.showColums();
 		}
 	}
 
