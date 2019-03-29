@@ -75,13 +75,16 @@ export default {
               sessionStorage.setItem('user', JSON.stringify(user));
                this.$router.push({ path: '/page6' });
             }*/
-             console.log(data);
              if(data != null) {
                sessionStorage.setItem('user', JSON.stringify(data));
-               this.$router.push({path: '/page6'});
+               if(!window.localStorage){
+                 alert("浏览器支持localstorage");
+               }else{
+                 var storage=window.localStorage;
+                 storage.setItem('user', JSON.stringify(data));
+                 this.$router.push({path: '/page6'});
+               }
              }else{
-               //this.$router.push({path: '/login'});
-               //this.ruleForm2.checkPass = "";
                this.$message.error("账号或密码错误");
              }
            });
