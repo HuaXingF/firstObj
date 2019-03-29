@@ -297,7 +297,7 @@
           this.idList.push(list[i].id)
         }
         //alert(this.idList)
-        console.log(this.idList)
+        //console.log(this.idList)
         //this.$refs.treeForm.setCheckedNodes([data]);
         //交叉点击节点
         /*  }else{
@@ -312,7 +312,7 @@
         if(name!=null && name!=""){
           this.$http.get("biaoyin/tbTree/selectAll.do?treeName=" +name)
                   .then(({data})=>{
-                    console.log("=======")
+                    //console.log("=======")
                     //console.log(data)
                     this.data2 = data
                   });
@@ -327,13 +327,13 @@
       //过滤树上的节点
       filterNode(value, data) {
         //alert(value)
-        console.log(data)
+        //console.log(data)
         if (!value) return true;
         return data.label.indexOf(value) !== -1;
       },
       queryByName(){
         this.$http.get("biaoyin/tbTree/queryPage?pageNum=" + this.page + "&&pageSize=5&&name="+this.name).then(({data}) =>{
-          console.log("===================")
+          //console.log("===================")
           //console.log(data)
           this.tableData=data.rows;
           this.total=data.total;
@@ -342,7 +342,7 @@
       //切换选项卡获取到tab实例
       handleClick(e){
         if(e.label!="主题词列表管理"){
-          console.log(e.label);
+          //console.log(e.label);
           this.treeName=e.label;
           //this.index=parseInt(e.name);
           //alert(this.index)
@@ -367,7 +367,7 @@
           this.$http.get("biaoyin/tbTree/queryPage?pageNum=" + this.page + "&&pageSize=5").then(({data}) => {
             this.tableData = data.rows;
             this.total = data.total;
-            console.log(data)
+            //console.log(data)
           })
         }else(
                 //console.log("==================="),
@@ -391,7 +391,7 @@
         this.$http.get("biaoyin/tbDictionary/queryByName.do").then(({data}) => {
           //alert(data)
           for(let i=0;i<data.length;i++){
-            console.log(data[i])
+            //console.log(data[i])
             let o={
               "name":data[i].name,
               "index":data[i].id,
@@ -404,12 +404,12 @@
       queryByTreeName(){
         this.$http.get("biaoyin/tbTree/selectAll.do?treeName=" + this.treeName)
                 .then(({data})=>{
-                  console.log("=======")
+                  //console.log("=======")
                   //console.log(data)
                   this.data = data;
                   this.data4 = data
                   //console.log(this.data4)
-                  console.log(this.data4)
+                  //console.log(this.data4)
                 });
       },
 
@@ -481,10 +481,10 @@
       findById(index=0,obj=null){
         this.changeFormVisible=true;
         this.Form=obj[index];
-        console.log(this.Form)
+        //console.log(this.Form)
         //this.$http.get("biaoyin/tbTree/queryById.do?id="+id)
         this.idList.push(this.Form.parentId)
-        console.log(this.idList)
+        //console.log(this.idList)
         this.onChange();
       },
       //提交编辑信息
@@ -547,9 +547,9 @@
           }else{
             this.$confirm("确认删除该主题及其下面所有主题吗？", "提示", {})
                     .then(() => {
-                      console.log(this.settings);
+                      //console.log(this.settings);
                       this.$http.get("biaoyin/tbTree/delById.do?id="+id).then(({data}) => {
-                        console.log(data);
+                        //console.log(data);
                         if(data){
                           this.$message({
                             message: '删除成功',
@@ -563,7 +563,7 @@
                       });
                     })
                     .catch(() => {
-                      console.log("取消");
+                      //console.log("取消");
                     });
 
           }
@@ -611,7 +611,7 @@
       delTree2(node, data){
         //alert(data.id)
         this.$http.get("biaoyin/tbTree/delById.do?id="+data.id).then(({data}) => {
-          console.log(data);
+          //console.log(data);
           this.queryByTreeName();
           if(data){
             this.$message({
@@ -653,7 +653,7 @@
       updata1(){
         let dat= clickTreeNodedata;
         this.editTreeNodeForm.id=dat.id
-        console.log(dat)
+        //console.log(dat)
         this.$http.post("biaoyin/tbTree/updateById.do",this.editTreeNodeForm).then(({data}) => {
           if(data){
             this.editTreeNodeForm={}
