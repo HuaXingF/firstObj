@@ -125,6 +125,7 @@
 				this.$refs.menuCollapsed.getElementsByClassName('submenu-hook-'+i)[0].style.display=status?'block':'none';
 			}
 		},
+
 		mounted() {
 			var user = localStorage.getItem('user');
 			if (user) {
