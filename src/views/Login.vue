@@ -75,7 +75,7 @@ export default {
               sessionStorage.setItem('user', JSON.stringify(user));
                this.$router.push({ path: '/page6' });
             }*/
-             if(data != null) {
+             if(data != null && data != "") {
                sessionStorage.setItem('user', JSON.stringify(data));
                if(!window.localStorage){
                  alert("浏览器支持localstorage");
