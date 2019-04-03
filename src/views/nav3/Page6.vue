@@ -2,11 +2,11 @@
   <el-tabs v-model="activeName" @tab-click="handleClick">
     <!--新增树上节点界面-->
     <el-dialog title="新增节点" v-model="addTreeNodeVisible" :close-on-click-modal="false">
-      <el-form :model="addTreeNodeForm" label-width="90px" ref="addTreeNodeForm">
-        <el-form-item label="主题词名称">
+      <el-form :model="addTreeNodeForm" :rules="rules" label-width="90px" ref="addTreeNodeForm">
+        <el-form-item label="主题词名称" prop="name">
           <el-input v-model="addTreeNodeForm.name" auto-complete="off"></el-input>
         </el-form-item>
-        <el-form-item label="主题词代码">
+        <el-form-item label="主题词代码" prop="meshcode">
           <el-input v-model="addTreeNodeForm.meshcode" auto-complete="off"></el-input>
         </el-form-item>
       </el-form>
@@ -18,11 +18,11 @@
 
     <!--编辑树上节点界面-->
     <el-dialog title="修改节点" v-model="editTreeNodeVisible" :close-on-click-modal="false">
-      <el-form :model="editTreeNodeForm" label-width="90px" ref="editTreeNodeForm">
-        <el-form-item label="主题词名称">
+      <el-form :model="editTreeNodeForm" :rules="rules" label-width="90px" ref="editTreeNodeForm">
+        <el-form-item label="主题词名称" prop="name">
           <el-input v-model="editTreeNodeForm.name" auto-complete="off"></el-input>
         </el-form-item>
-        <el-form-item label="主题词代码">
+        <el-form-item label="主题词代码" prop="meshcode">
           <el-input v-model="editTreeNodeForm.meshcode" auto-complete="off"></el-input>
         </el-form-item>
       </el-form>
@@ -36,9 +36,9 @@
       </el-tab-pane>
     </div>
     <div v-if="activeName!='0'">
-      <div v-if="data4.length<1">
-        <span>没有节点,<a href="#" style="text-decoration: none;color: #2baee9;" @click="addTrees()">点我添加节点</a></span>
-      </div>
+      <!--<div v-if="data4.length<1">-->
+        <span><a href="#" style="text-decoration: none;color: #2baee9;" @click="addTrees()">点我添加根节点</a></span>
+      <!--</div>-->
       <el-input
               placeholder="输入关键字进行过滤"
               v-model="filterText">
@@ -139,10 +139,11 @@
           <el-button v-on:click="goclear()"  @click.native="addFormVisible = false">取消</el-button>
           <el-button type="primary" v-on:click="addTree" >新增主题词</el-button>
         </div>
+        +-
       </el-dialog>
 
       <!--编辑界面-->
-      <el-dialog title="编辑主题词" v-model="changeFormVisible" :close-on-click-modal="false">
+      <el-dialog title="编辑主题词" :visible.sync="changeFormVisible" :before-close="goclear" >
         <el-form :model="Form" label-width="90px" ref="addForm">
           <el-form-item label="中文主题词" prop="name">
             <el-input v-model="Form.name" auto-complete="off"></el-input>
@@ -170,8 +171,8 @@
                     default-expand-all
                     :default-checked-keys="idList"
                     :filter-node-method="filterNode"
-                    @check-change="setIds"
-                    ref="tree2">
+                    @check-change="setIds1"
+                    ref="tree3">
             </el-tree>
           </el-form-item>
           <el-form-item label="主题词编号">
@@ -231,7 +232,10 @@
         }
       ];*/
       return {
-
+        rules: {
+          name:[{ required: true, message: "请输入主题词", trigger: "blur" }],
+          meshcode:[{ required: true, message: "请输入主题词代码", trigger: "blur" }]
+        },
         filterText: "",
         data:[],
         showPane: this.$route.query.index,
@@ -284,19 +288,28 @@
     },
     methods: {
       goclear(){
+        this.changeFormVisible = false;
         this.Form={};
         this.idList=[];
         this.data2=[];
       },
+      setIds1() {
+        // if(checked){
+        let list = this.$refs.tree3.getCheckedNodes();
+        this.idList = [];
+        for (let i = 0; i < list.length; i++) {
+          this.idList.push(list[i].id)
+        }
+      },
       //新增编辑选择父级id
       setIds(){
         // if(checked){
-        let list = this.$refs.tree2.getCheckedNodes(true,false);
+        let list = this.$refs.tree2.getCheckedNodes();
         this.idList=[];
         for(let i=0;i<list.length;i++){
           this.idList.push(list[i].id)
         }
-        //alert(this.idList)
+        //alert(this.idList.length)
         //console.log(this.idList)
         //this.$refs.treeForm.setCheckedNodes([data]);
         //交叉点击节点
@@ -455,6 +468,7 @@
         }else if(this.idList.length<=0){
           this.Form.parentId=0;
         }
+        //alert(this.idList.length+"----"+this.Form.parentId);
         if(bool){
           this.$http.post("biaoyin/tbTree/insert.do",this.Form).then(({data}) => {
             if(data){
@@ -491,6 +505,7 @@
       changeTree(){
         let bool=true;
 
+        //alert(this.idList.length);
         if (this.Form.meshcode ==null || this.Form.meshcode==""){
           bool=false;
           this.$message({
@@ -606,7 +621,11 @@
 
       },
       saveTreeNode() {
-        this.insert();
+        this.$refs.addTreeNodeForm.validate((valid) => {
+          if(valid) {
+            this.insert();
+          }
+        })
       },
       delTree2(node, data){
         //alert(data.id)
@@ -664,7 +683,11 @@
       },
       //保存编辑的节点数据
       saveEditNode() {
-        this.updata1();
+        this.$refs.editTreeNodeForm.validate((valid) => {
+          if(valid) {
+            this.updata1();
+          }
+        })
       },
 
       renderContent(h, { node, data, store }) {
