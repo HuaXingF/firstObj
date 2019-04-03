@@ -21,6 +21,7 @@
         show-checkbox
         node-key="id"
         default-expand-all
+        :check-strictly=true
         :expand-on-click-node="false"
         :props="defaultProps"
         :default-checked-keys="checked_keys"
@@ -152,17 +153,7 @@ export default {
         name: [{ required: true, message: "请输入姓名", trigger: "blur" }]
       },
       //新增界面数据
-      addForm: {
-       /* name: "刘桂香 / 女 / 34岁 / 湖北省武汉市洪山区关山街道",
-        sex: "男",
-        age: 34,
-        birth: "",
-        addr: "湖北省武汉市洪山区关山街道",
-        des:
-          "头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤头疼已经3个月，偶尔伴有呕吐现象，之前检查显示胃上有肿瘤",
-        kw: "胃上异物",
-        tw: "胃溃疡"*/
-      }
+      addForm: {}
     };
   },
   methods: {
@@ -210,14 +201,16 @@ export default {
 	renderContent(){
 	},
     delDialogTable(){
+      //this.checked_keys = [];//去掉选中的树
       this.dialogTableVisible = false;
       this.panduan = false;
     },
     //保存与编辑的方法
     saveDialogTable(panduan){
+      //this.checked_keys = [];//去掉选中的树
       //获取选中项的主题词
       //alert(this.$refs.tree2.getCheckedKeys()+"---"+this.$refs.tree2.getCheckedNodes());// 获取所有选中项的id
-      let ridsb = this.$refs.tree2.getCheckedNodes(true,false);// 获取选中项的对象
+      let ridsb = this.$refs.tree2.getCheckedNodes();// 获取选中项的对象
       let name = "";
       let name_id = null;
       ridsb.forEach(ids =>{// 遍历集合
