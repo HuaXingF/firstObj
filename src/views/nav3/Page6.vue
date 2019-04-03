@@ -161,7 +161,7 @@
           <el-form-item label="父级主题词">
             <el-input
                     placeholder="输入关键字进行过滤"
-                    v-model="filterText">
+                    v-model="filterText1">
             </el-input>
             <el-tree
                     :data="data2"
@@ -207,8 +207,13 @@
         //alert(this.index);
         this.$refs.tree2.filter(val);
         //console.log(val)
-      }
-      ,
+      },
+      filterText1(val) {
+        //alert(this.index);
+        this.$refs.tree3.filter(val);
+
+        //console.log(val)
+      },
       name(val){
         this.queryByName(val);
 
@@ -243,7 +248,7 @@
         rootNodeName: this.$route.query.nodeName,
         editTreeNodeVisible: false,
         addTreeNodeVisible: false,
-        //filterText2: "",
+        filterText1: "",
         // filterText3: "",
         /*
         data5: JSON.parse(JSON.stringify(this.data2)),
