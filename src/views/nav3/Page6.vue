@@ -298,15 +298,20 @@
         this.idList=[];
         this.data2=[];
       },
-      setIds1() {
-        // if(checked){
+      //设置只能选中单个节点
+      setIds1(data,checked,node) {
+        if(checked == true){
+          this.$refs.tree3.setCheckedNodes([data]);
+        }
         let list = this.$refs.tree3.getCheckedNodes();
         this.idList = [];
         for (let i = 0; i < list.length; i++) {
           this.idList.push(list[i].id)
         }
       },
-      //新增编辑选择父级id
+      /*handleClickTree(data, checked, node){
+        this.$refs.tree3.setCheckedNodes([data]);
+      },*/
       setIds(){
         // if(checked){
         let list = this.$refs.tree2.getCheckedNodes();
@@ -560,8 +565,9 @@
       delTree(index=0,obj=null){
         let id=obj[index].id;
         let treename=obj[index].treename;
+        let name = obj[index].name;
         //alert(id)
-        this.$http.get("biaoyin/tbLable/findByTreeName?treeName="+treename).then(({data}) => {
+        this.$http.get("biaoyin/tbLable/findByTreeName?treeName="+treename+"&keyword="+name).then(({data}) => {
           if(data != null && data.length>0){ // 如果该词典存在标引
             this.$message.error("该词典正在使用中,不能删除");
           }else{
