@@ -26,6 +26,7 @@
         :props="defaultProps"
         :default-checked-keys="checked_keys"
         :filter-node-method="filterNode"
+        @check-change="setIds"
         ref="tree2"
       ></el-tree>
       <!-- :render-content="renderContent"-->
@@ -161,6 +162,11 @@ export default {
     filterNode(value, data) {
       if (!value) return true;
       return data.label.indexOf(value) !== -1;
+    },
+    setIds(data,checked,node) {
+      if (checked == true) {
+        this.$refs.tree2.setCheckedNodes([data]);
+      }
     },
     //显示编辑界面
     markText: function() {

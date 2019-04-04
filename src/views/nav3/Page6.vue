@@ -312,8 +312,10 @@
       /*handleClickTree(data, checked, node){
         this.$refs.tree3.setCheckedNodes([data]);
       },*/
-      setIds(){
-        // if(checked){
+      setIds(data,checked,node){
+          if (checked == true) {
+              this.$refs.tree2.setCheckedNodes([data]);
+          }
         let list = this.$refs.tree2.getCheckedNodes();
         this.idList=[];
         for(let i=0;i<list.length;i++){
